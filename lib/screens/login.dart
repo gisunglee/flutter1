@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:provider/provider.dart';
+import 'package:startup_namer/data/join_or_login.dart';
 import 'package:startup_namer/helper/login_background.dart';
+
 
 class AuthPage extends StatelessWidget {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passworkdController = TextEditingController();
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +20,7 @@ class AuthPage extends StatelessWidget {
         body: Stack(alignment: Alignment.center, children: <Widget>[
       CustomPaint( //
         size: size,
-        painter: LoginBackground(),
+        painter: LoginBackground(isJoin: Provider.of<JoinOrLogin>(context).isJoin),
       ),
       Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -32,7 +37,23 @@ class AuthPage extends StatelessWidget {
           Container(
             height: size.height * 0.1,
           ),
-          Text("Don't Have an Account:? Create One"),
+          Consumer<JoinOrLogin>(
+            /*
+            이걸 아래처럼 표현 가능
+            builder: (BuildContext context, JoinOrLogin value, Widget child)=> GestureDetector(
+                onTap: (){
+                  JoinOrLogin joinOrLogin = Provider.of<JoinOrLogin>(context, listen: false);
+                  joinOrLogin.toggle();
+                },
+             */
+            builder: (context, joinOrLogin, child)=> GestureDetector(
+                onTap: (){
+                  joinOrLogin.toggle();
+                },
+                child: Text(joinOrLogin.isJoin?"Already Have an Account? Sign in":"Don't Have an Account:? Create One",
+                style: TextStyle(color: joinOrLogin.isJoin?Colors.red:Colors.blue))),
+          ),
+
           Container(
             height: size.height * 0.5,
           )
@@ -42,9 +63,13 @@ class AuthPage extends StatelessWidget {
   }
 
   Widget get _logoImage => Container(
-    height: 200,
-    child: CircleAvatar(
-      backgroundImage: NetworkImage("https://picsum.photos/200", scale: 100),
+    height: 250,
+    child: Padding(
+      padding: const EdgeInsets.only(top: 30),
+      child: CircleAvatar(
+        maxRadius: 300,
+        backgroundImage: NetworkImage("https://picsum.photos/210", scale: 100),
+      ),
     ),
   );
 
