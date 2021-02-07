@@ -29,6 +29,7 @@ class _ForgetPwState extends State<ForgetPw>{
                   return "Please input correct Email.";
                 }
                 return null;
+
               },
             ),
             FlatButton(onPressed: () async {
