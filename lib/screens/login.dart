@@ -1,8 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:startup_namer/data/join_or_login.dart';
 import 'package:startup_namer/helper/login_background.dart';
+import 'package:startup_namer/screens/main_page.dart';
 
 
 class AuthPage extends StatelessWidget {
@@ -53,7 +55,6 @@ class AuthPage extends StatelessWidget {
                 child: Text(joinOrLogin.isJoin?"Already Have an Account? Sign in":"Don't Have an Account:? Create One",
                 style: TextStyle(color: joinOrLogin.isJoin?Colors.red:Colors.blue))),
           ),
-
           Container(
             height: size.height * 0.5,
           )
@@ -62,13 +63,40 @@ class AuthPage extends StatelessWidget {
     ]));
   }
 
+  void _register(BuildContext context) async {
+     final UserCredential result = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: _emailController.text, password: _passworkdController.text);
+     final User user = result.user;
+
+     if(user == null){
+        final snacBar = SnackBar(content: Text('Please try again later.'),);
+        Scaffold.of(context).showSnackBar(snacBar);
+     }
+
+     // 뭐 이런것도 되는데 다른 방법으로 한데
+     // Navigator.push(context, MaterialPageRoute(builder: (Context)=>MainPage(email:user.email)))
+  }
+
+  void _login(BuildContext context) async {
+     final UserCredential result = await FirebaseAuth.instance.signInWithEmailAndPassword(email: _emailController.text, password: _passworkdController.text);
+     final User user = result.user;
+
+     if(user == null){
+        final snacBar = SnackBar(content: Text('Please try again later.'),);
+        Scaffold.of(context).showSnackBar(snacBar);
+     }
+
+     // 뭐 이런것도 되는데 다른 방법으로 한데
+     // Navigator.push(context, MaterialPageRoute(builder: (Context)=>MainPage(email:user.email)))
+  }
+
   Widget get _logoImage => Container(
     height: 250,
     child: Padding(
       padding: const EdgeInsets.only(top: 30),
       child: CircleAvatar(
-        maxRadius: 300,
-        backgroundImage: NetworkImage("https://picsum.photos/210", scale: 100),
+        maxRadius: 350,
+        // backgroundImage: AssetImage("assets/login.gif"),
+        backgroundImage: NetworkImage("https://picsum.photos/300", scale: 120),
       ),
     ),
   );
@@ -80,18 +108,21 @@ class AuthPage extends StatelessWidget {
         bottom: 0,
         child: SizedBox(
           height: 50,
-          child: RaisedButton(
-              child: Text("Login", style: TextStyle(fontSize: 20, color: Colors.white),),
-              color: Colors.blue,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              onPressed: () {
-                if(_formKey.currentState.validate()){
-                  print(_emailController.value.toString());
-                  print(_passworkdController.value.toString());
-                }
-              }),
+          child: Consumer<JoinOrLogin>(
+            builder: (context, joinOrLogin, child) => RaisedButton(
+                child: Text(
+                  joinOrLogin.isJoin?"Join":"Login",
+                  style: TextStyle(fontSize: 20, color: Colors.white),),
+                color: joinOrLogin.isJoin?Colors.red:Colors.blue,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                onPressed: () {
+                  if(_formKey.currentState.validate()){
+                    joinOrLogin.isJoin?_register(context):_login(context);
+                  }
+                }),
+          ),
         ),
       );
 
@@ -136,7 +167,11 @@ class AuthPage extends StatelessWidget {
                   Container(
                     height: 8,
                   ),
-                  Text("Forget Password"),
+                  Consumer<JoinOrLogin>(
+                    builder: (context, value, child) => Opacity(
+                        opacity: value.isJoin?0:1,
+                        child: Text("Forget Password")),
+                  ),
                 ],
               )),
         ),
